@@ -4,6 +4,7 @@ const path = require('path');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const seedData = require('./config/seeder');
+const fs = require('fs');
 
 // Load environment variables
 dotenv.config();
@@ -41,10 +42,13 @@ app.get('/api/health', (req, res) => {
 });
 
 // Serve frontend in production (if build folder exists)
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/dist')));
+const frontendDistPath = path.resolve(__dirname, '../client/dist');
+const indexHtmlPath = path.join(frontendDistPath, 'index.html');
+
+if (process.env.NODE_ENV === 'production' && fs.existsSync(indexHtmlPath)) {
+  app.use(express.static(frontendDistPath));
   app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '../client', 'dist', 'index.html'));
+    res.sendFile(indexHtmlPath);
   });
 } else {
   app.get('/', (req, res) => {
